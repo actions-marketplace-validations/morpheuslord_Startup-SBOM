@@ -11,7 +11,7 @@ branding:
 #     contents: read
 #     security-events: write   # only needed when upload-sarif is true
 #   steps:
-#     - uses: morpheuslord/Startup-SBOM@<full-commit-sha> # v2.0.3
+#     - uses: morpheuslord/Startup-SBOM@<full-commit-sha> # v2.0.4
 #       with:
 #         target: docker-archive:image.tar
 #         fail-on: high
@@ -44,7 +44,7 @@ inputs:
     required: false
     default: ""
   version:
-    description: "startup-sbom version to install from PyPI (e.g. 2.0.3). Empty = run the code at the ref this action was pinned to."
+    description: "startup-sbom version to install from PyPI (e.g. 2.0.4). Empty = run the code at the ref this action was pinned to."
     required: false
     default: ""
   python-version:
@@ -196,7 +196,7 @@ runs:
 
     - name: Upload SARIF to code scanning
       if: ${{ !cancelled() && inputs.upload-sarif == 'true' && steps.scan.outputs.sarif-file != '' }}
-      uses: github/codeql-action/upload-sarif@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+      uses: github/codeql-action/upload-sarif@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
       with:
         sarif_file: ${{ steps.scan.outputs.sarif-file }}
         category: ${{ inputs.sarif-category }}

@@ -36,12 +36,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: github/codeql-action/init@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+      - uses: github/codeql-action/init@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
         with:
           languages: ${{ matrix.language }}
           build-mode: none
           queries: security-extended
-      - uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+      - uses: github/codeql-action/analyze@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
         with:
           category: "/language:${{ matrix.language }}"
 
@@ -52,6 +52,8 @@ jobs:
       contents: read # checkout
       security-events: write # SARIF upload to code scanning
       actions: read # workflow metadata for private repositories
+    env:
+      CODACY_TOOLS: Semgrep Trivy Checkov Hadolint
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -72,20 +74,22 @@ jobs:
       # CodeQL above.
       - name: Run the security analyzers
         run: |
+          tools=()
+          for tool in $CODACY_TOOLS; do tools+=(--tool "$tool"); done
           set +e
           codacy-analysis analyze . --install-dependencies --no-log --no-update-notifier \
-            --parallel-tools 4 --tool Semgrep --tool Trivy --tool Checkov --tool Hadolint \
-            --output-format sarif --output results.sarif
+            --parallel-tools 4 "${tools[@]}" --output-format sarif --output results.sarif
           rc=$?
           set -e
           echo "codacy-analysis exited with $rc (1 = issues found)"
           # Findings never fail the job here: code scanning owns that decision on PRs.
           test -s results.sarif
-      # Codacy writes one SARIF run per tool; code scanning needs one category per run.
+      # Codacy writes one SARIF run per tool with findings; code scanning needs one
+      # category per run, and an empty run for a clean tool so its fixed alerts close.
       - name: Give each Codacy tool its own code-scanning category
-        run: python3 .github/scripts/split_sarif_categories.py results.sarif codacy.sarif codacy
+        run: python3 .github/scripts/split_sarif_categories.py results.sarif codacy.sarif codacy $CODACY_TOOLS
       - name: Upload Codacy results to code scanning
-        uses: github/codeql-action/upload-sarif@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+        uses: github/codeql-action/upload-sarif@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
         with:
           sarif_file: codacy.sarif
 
@@ -100,4 +104,4 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482 # v0.6.4
+      - uses: zizmorcore/zizmor-action@85b2b9fb8e3325e7a23d7d0a9d7ba5ae0f999e3e # v0.7.1
