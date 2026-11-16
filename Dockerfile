@@ -24,7 +24,7 @@
 # Builder: resolve the locked dependency set into a self-contained venv.
 # Both stages are pinned by digest; Dependabot (docker ecosystem) bumps them.
 # ---------------------------------------------------------------------------
-FROM ghcr.io/astral-sh/uv:0.13.5-python3.14-trixie-slim@sha256:d8e732839dfc4225a1ff698803b478b2223c05636c055d3add41ab9dbec0f315 AS builder
+FROM ghcr.io/astral-sh/uv:0.13.8-python3.14-trixie-slim@sha256:81a1340fea1e72ad4a8e9a016128b0c61041cf182ea49fd788023e52842bc147 AS builder
 
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
@@ -52,7 +52,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 # Runtime: same Python as the builder (identical interpreter path), no uv,
 # no compilers, no package-manager caches, non-root by default.
 # ---------------------------------------------------------------------------
-FROM python:3.14-slim-trixie@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170 AS runtime
+FROM python:3.15-slim-trixie@sha256:65a65fc7b30b06cb6df4930fd4650697cb23f4c2698ab81fc87e4b031bc36928 AS runtime
 
 LABEL org.opencontainers.image.title="startup-sbom" \
       org.opencontainers.image.description="Root-confined static analysis of Linux root filesystems and container images" \
